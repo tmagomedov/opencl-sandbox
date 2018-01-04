@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
+project(clRun C)
 find_package(OpenCL REQUIRED)
 add_executable(clrun clrun.c)
 target_include_directories(clrun PRIVATE ${OpenCL_INCLUDE_DIRS})
