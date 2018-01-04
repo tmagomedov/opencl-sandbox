@@ -14,5 +14,5 @@ int main(int argc, char *argv[])
   //TODO: platforms loop
   //TODO: devices loop
   //TODO: build program
-  //TODO: run program
+  //TODO: run all kernels in program, one by one
 }
