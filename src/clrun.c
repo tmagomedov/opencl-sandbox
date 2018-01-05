@@ -1,6 +1,7 @@
 #include <CL/opencl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 void printUsage(const char* programName)
 {
@@ -104,8 +105,39 @@ int main(int argc, char* argv[])
 	  if (CL_SUCCESS == clRet)
 	  {
 	    printBuildLog(program, dev);
+	    cl_command_queue queue = clCreateCommandQueue(context, dev, 0, &clRet);
+	    if (CL_SUCCESS == clRet)
+	    {
+	      size_t kernelNamesSize = 0;
+	      clGetProgramInfo(program, CL_PROGRAM_KERNEL_NAMES, 0, NULL, &kernelNamesSize);
+	      char* kernelNames = allocate(kernelNamesSize + 1);
+	      clGetProgramInfo(program, CL_PROGRAM_KERNEL_NAMES, kernelNamesSize, kernelNames, NULL);
+	      char* kernelName = strtok(kernelNames, ";");
+	      while(kernelName)
+	      {
+	        cl_kernel kernel = clCreateKernel(program, kernelName, &clRet);
+		if (CL_SUCCESS == clRet)
+		{
+		  printf("Running \"%s\" kernel\n", kernelName);
+		  fflush(stdout);
+		  size_t workSize = 1;
+		  clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &workSize, &workSize, 0, NULL, NULL);
+		  clFinish(queue);
+		  clReleaseKernel(kernel);
+		}
+		else
+		{
+		  printf("Failed to create \"%s\" kernel\n", kernelName);
+		}
 
-            //TODO: run all kernels in program, one by one
+	        kernelName = strtok(NULL, ";");
+	      }
+	      clReleaseCommandQueue(queue);
+	    }
+	    else
+	    {
+	      printf("Failed to create command queue for device\n");
+	    }
 	  }
 	  else
 	  {
