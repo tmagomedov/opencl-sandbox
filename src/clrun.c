@@ -33,6 +33,7 @@ void printBuildLog(cl_program program, cl_device_id dev)
     puts("============");
     puts(buildLog);
     puts("============");
+    free(buildLog);
   }
   else
   {
@@ -80,7 +81,6 @@ int main(int argc, char* argv[])
     platformName = allocate(platformNameSize + 1);
     clGetPlatformInfo(platforms[i], CL_PLATFORM_NAME, platformNameSize, platformName, NULL);
     printf("Platform \"%s\"\n", platformName);
-    free(platformName);
 
     cl_uint nDevices = 0;
     clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_ALL, 0, NULL, &nDevices);
@@ -118,7 +118,7 @@ int main(int argc, char* argv[])
 	        cl_kernel kernel = clCreateKernel(program, kernelName, &clRet);
 		if (CL_SUCCESS == clRet)
 		{
-		  printf("Running \"%s\" kernel\n", kernelName);
+		  printf("Running \"%s\" kernel on %s / %s\n", kernelName, platformName, deviceName);
 		  fflush(stdout);
 		  size_t workSize = 1;
 		  clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &workSize, &workSize, 0, NULL, NULL);
@@ -132,6 +132,7 @@ int main(int argc, char* argv[])
 
 	        kernelName = strtok(NULL, ";");
 	      }
+              free(kernelNames);
 	      clReleaseCommandQueue(queue);
 	    }
 	    else
@@ -156,8 +157,10 @@ int main(int argc, char* argv[])
       {
         printf("Failed to create context\n");
       }
+      free(deviceName);
     }
     free(devices);
+    free(platformName);
   }
   free(platforms);
   free(source);
